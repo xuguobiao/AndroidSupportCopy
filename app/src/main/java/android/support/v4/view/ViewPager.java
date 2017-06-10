@@ -12,7 +12,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.MathUtils;
 import android.view.FocusFinder;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -2823,5 +2822,16 @@ public class ViewPager extends ViewGroup {
 
     private boolean isLayoutRtl() {
         return ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL;
+    }
+
+    static class MathUtils {
+        static int constrain(int amount, int low, int high) {
+            return amount < low ? low : (amount > high ? high : amount);
+        }
+
+        static float constrain(float amount, float low, float high) {
+            return amount < low ? low : (amount > high ? high : amount);
+        }
+
     }
 }
