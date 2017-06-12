@@ -177,7 +177,7 @@ public class ViewPager extends ViewGroup {
     private List<OnPageChangeListener> mOnPageChangeListeners;
     private OnPageChangeListener mOnPageChangeListener;
     private OnPageChangeListener mInternalPageChangeListener;
-    private OnAdapterChangeListener mAdapterChangeListener;
+    private List<OnAdapterChangeListener> mAdapterChangeListeners;
     private PageTransformer mPageTransformer;
 
     private static final int DRAW_ORDER_DEFAULT = 0;
@@ -293,10 +293,18 @@ public class ViewPager extends ViewGroup {
     }
 
     /**
-     * Used internally to monitor when adapters are switched.
+     * Callback interface for responding to adapter changes.
      */
-    interface OnAdapterChangeListener {
-        public void onAdapterChanged(PagerAdapter oldAdapter, PagerAdapter newAdapter);
+    public interface OnAdapterChangeListener {
+        /**
+         * Called when the adapter for the given view pager has changed.
+         *
+         * @param viewPager  ViewPager where the adapter change has happened
+         * @param oldAdapter the previously set adapter
+         * @param newAdapter the newly set adapter
+         */
+        void onAdapterChanged(ViewPager viewPager,
+                              PagerAdapter oldAdapter, PagerAdapter newAdapter);
     }
 
     /**
@@ -400,8 +408,11 @@ public class ViewPager extends ViewGroup {
             }
         }
 
-        if (mAdapterChangeListener != null && oldAdapter != adapter) {
-            mAdapterChangeListener.onAdapterChanged(oldAdapter, adapter);
+        // Dispatch the change to any listeners
+        if (mAdapterChangeListeners != null && !mAdapterChangeListeners.isEmpty()) {
+            for (int i = 0, count = mAdapterChangeListeners.size(); i < count; i++) {
+                mAdapterChangeListeners.get(i).onAdapterChanged(this, oldAdapter, adapter);
+            }
         }
     }
 
@@ -425,8 +436,29 @@ public class ViewPager extends ViewGroup {
         return mAdapter;
     }
 
-    void setOnAdapterChangeListener(OnAdapterChangeListener listener) {
-        mAdapterChangeListener = listener;
+
+    /**
+     * Add a listener that will be invoked whenever the adapter for this ViewPager changes.
+     *
+     * @param listener listener to add
+     */
+    public void addOnAdapterChangeListener(OnAdapterChangeListener listener) {
+        if (mAdapterChangeListeners == null) {
+            mAdapterChangeListeners = new ArrayList<>();
+        }
+        mAdapterChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a listener that was previously added via
+     * {@link #addOnAdapterChangeListener(OnAdapterChangeListener)}.
+     *
+     * @param listener listener to remove
+     */
+    public void removeOnAdapterChangeListener(OnAdapterChangeListener listener) {
+        if (mAdapterChangeListeners != null) {
+            mAdapterChangeListeners.remove(listener);
+        }
     }
 
     private int getPaddedWidth() {

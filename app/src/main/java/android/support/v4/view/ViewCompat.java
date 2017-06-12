@@ -35,6 +35,11 @@ public class ViewCompat {
         void setElevation(View view, float elevation);
 
         int getLayoutDirection(View view);
+
+        boolean isLaidOut(View view);
+
+        void setPaddingRelative(View view, int start, int top, int end, int bottom);
+
     }
 
     static class BaseViewCompatImpl implements ViewCompatImpl {
@@ -58,9 +63,20 @@ public class ViewCompat {
             return LAYOUT_DIRECTION_LTR;
         }
 
+        @Override
+        public boolean isLaidOut(View view) {
+            return view.getWidth() > 0 && view.getHeight() > 0;
+        }
+
+        @Override
+        public void setPaddingRelative(View view, int start, int top, int end, int bottom) {
+            view.setPadding(start, top, end, bottom);
+        }
+
         long getFrameTime() {
             return FAKE_FRAME_TIME;
         }
+
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -83,8 +99,20 @@ public class ViewCompat {
         public int getLayoutDirection(View view) {
             return view.getLayoutDirection();
         }
+
+        @Override
+        public void setPaddingRelative(View view, int start, int top, int end, int bottom) {
+            view.setPaddingRelative(start, top, end, bottom);
+        }
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    static class KitkatViewCompatImpl extends JBMr1ViewCompatImpl {
+        @Override
+        public boolean isLaidOut(View view) {
+            return view.isLaidOut();
+        }
+    }
     // Other versions impl...
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -105,6 +133,8 @@ public class ViewCompat {
         final int version = Build.VERSION.SDK_INT;
         if (version >= Build.VERSION_CODES.LOLLIPOP) {
             IMPL = new LollipopViewCompatImpl();
+        } else if (version >= Build.VERSION_CODES.KITKAT) {
+            IMPL = new KitkatViewCompatImpl();
         } else if (version >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             IMPL = new JBMr1ViewCompatImpl();
         } else if (version >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -132,5 +162,11 @@ public class ViewCompat {
         return IMPL.getLayoutDirection(view);
     }
 
+    public static boolean isLaidOut(View view) {
+        return IMPL.isLaidOut(view);
+    }
 
+    public static void setPaddingRelative(View view, int start, int top, int end, int bottom) {
+        IMPL.setPaddingRelative(view, start, top, end, bottom);
+    }
 }
